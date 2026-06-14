@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>填报指南 - 智填志愿</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { padding-top: 68px; }
+    .guide-page { padding: 40px 0 80px; }
+
+    .guide-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* 目录侧边栏 */
+    .toc-sidebar {
+      position: sticky;
+      top: 88px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    .toc-sidebar h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .toc-list { display: flex; flex-direction: column; gap: 4px; }
+    .toc-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .toc-item:hover,
+    .toc-item.active { color: var(--primary); background: var(--primary-light); }
+    .toc-sub { padding-left: 24px; font-size: 0.83rem; }
+
+    /* 文章内容 */
+    .guide-content { min-width: 0; }
+
+    .guide-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .guide-card h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .guide-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--primary);
+    }
+
+    .guide-card p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px; }
+    .guide-card ul, .guide-card ol { margin: 12px 0 16px 20px; }
+    .guide-card li { color: var(--text-secondary); line-height: 1.8; margin-bottom: 4px; }
+
+    .tip-box {
+      background: #fef9c3;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .tip-box.info { background: #eff6ff; border-color: #bfdbfe; border-left-color: #3b82f6; }
+    .tip-box.danger { background: #fef2f2; border-color: #fecaca; border-left-color: #ef4444; }
+    .tip-box.success { background: #f0fdf4; border-color: #bbf7d0; border-left-color: #22c55e; }
+
+    .tip-box p { color: #1e293b; margin: 0; }
+    .tip-box strong { display: block; margin-bottom: 4px; }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    .info-table th {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .info-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .info-table tr:hover td { background: #f8fafc; }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .faq-q {
+      padding: 16px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      transition: background 0.2s;
+    }
+    .faq-q:hover { background: var(--bg); }
+    .faq-q .arrow { transition: transform 0.3s; font-size: 0.9rem; color: var(--text-muted); }
+    .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
+    .faq-a {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-a { padding: 0 20px 16px; max-height: 300px; }
+
+    @media (max-width: 900px) {
+      .guide-layout { grid-template-columns: 1fr; }
+      .toc-sidebar { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">智填志愿</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="score.html">成绩分析</a></li>
+        <li><a href="school.html">院校查询</a></li>
+        <li><a href="recommend.html">智能推荐</a></li>
+        <li><a href="ai-chat.html">AI咨询</a></li>
+        <li><a href="guide.html" class="active">填报指南</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-outline">登录</a>
+        <a href="register.html" class="btn-primary">免费注册</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="guide-page">
+    <div class="container">
+      <div class="guide-layout">
+        <!-- 目录 -->
+        <div class="toc-sidebar">
+          <h4>目录</h4>
+          <div class="toc-list">
+            <a class="toc-item" href="#sec1">一、认识高考录取制度</a>
+            <a class="toc-item toc-sub" href="#sec1-1">1.1 批次划分</a>
+            <a class="toc-item toc-sub" href="#sec1-2">1.2 平行志愿原则</a>
+            <a class="toc-item" href="#sec2">二、如何确定报考范围</a>
+            <a class="toc-item toc-sub" href="#sec2-1">2.1 分数定位</a>
+            <a class="toc-item toc-sub" href="#sec2-2">2.2 位次法</a>
+            <a class="toc-item" href="#sec3">三、冲稳保策略详解</a>
+            <a class="toc-item" href="#sec4">四、如何选择专业</a>
+            <a class="toc-item" href="#sec5">五、常见错误与避坑</a>
+            <a class="toc-item" href="#sec6">六、常见问题解答</a>
+          </div>
+        </div>
+
+        <!-- 正文 -->
+        <div class="guide-content">
+
+          <!-- 第一节 -->
+          <div class="guide-card" id="sec1">
+            <h2>📋 一、认识高考录取制度</h2>
+
+            <h3 id="sec1-1">1.1 批次划分</h3>
+            <p>全国各省高考录取分为多个批次，各省略有差异，以广东省为例：</p>
+
+            <table class="info-table">
+              <thead>
+                <tr><th>批次</th><th>说明</th><th>代表院校</th><th>志愿数量</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>本科提前批</td><td>军事、公安、定向招生等特殊类型</td><td>军事院校、公费师范</td><td>1-3个</td></tr>
+                <tr><td>本科批（一档）</td><td>普通类本科，主要招生批次</td><td>985/211/双非院校</td><td>12个</td></tr>
+                <tr><td>专科批</td><td>高职专科招生</td><td>高职院校</td><td>多个</td></tr>
+              </tbody>
+            </table>
+
+            <div class="tip-box info">
+              <p><strong>💡 重要提醒</strong>本科提前批不影响本科批录取，建议有意愿的同学积极参与，不占本科批机会。</p>
+            </div>
+
+            <h3 id="sec1-2">1.2 平行志愿原则</h3>
+            <p>广东实行平行志愿制度，核心规则是：<strong>"分数优先，遵循志愿，一轮投档"</strong>。</p>
+            <p>具体流程如下：</p>
+            <ol>
+              <li>所有考生按分数从高到低排序</li>
+              <li>轮到某考生时，系统从其第1个志愿开始检索</li>
+              <li>如果第1志愿的院校有名额，且考生分数达到该院校提档线，则投档成功</li>
+              <li>若第1志愿投档失败（名额满了），继续检索第2志愿……</li>
+              <li>12个志愿检索完仍未匹配，则该考生本批次落档</li>
+            </ol>
+
+            <div class="tip-box danger">
+              <p><strong>⚠️ 关键误区</strong>很多同学误以为平行志愿可以"保底"——事实上，一旦一个志愿投档，后续志愿不再看。因此志愿顺序非常重要，要把最想去的院校排在前面！</p>
+            </div>
+          </div>
+
+          <!-- 第二节 -->
+          <div class="guide-card" id="sec2">
+            <h2>📊 二、如何确定报考范围</h2>
+
+            <h3 id="sec2-1">2.1 分数定位方法</h3>
+            <p>最简单的方法是查看目标院校近3年在你省份的录取最低分，与你的成绩对比：</p>
+            <ul>
+              <li>你的分数 > 历年最低分 + 15分：冲一冲</li>
+              <li>你的分数 ≈ 历年最低分 ± 5分：稳一稳</li>
+              <li>你的分数 < 历年最低分 - 20分：保一保</li>
+            </ul>
+
+            <h3 id="sec2-2">2.2 位次法（更精准）</h3>
+            <p>由于每年高考难度不同，直接比分数不够准确，建议使用<strong>位次法</strong>：</p>
+            <ol>
+              <li>查询你的分数对应的<strong>全省排名（位次）</strong></li>
+              <li>查询目标院校往年录取的<strong>最低录取位次</strong></li>
+              <li>如果你的位次优于（小于）目标院校历年位次，则有希望录取</li>
+            </ol>
+
+            <div class="tip-box success">
+              <p><strong>✅ 推荐工具</strong>使用本平台的"成绩分析"功能，输入分数即可自动计算全省位次，并匹配可报院校范围。</p>
+            </div>
+          </div>
+
+          <!-- 第三节 -->
+          <div class="guide-card" id="sec3">
+            <h2>🎯 三、冲稳保策略详解</h2>
+
+            <p>科学的志愿填报需要合理搭配冲稳保三类院校：</p>
+
+            <table class="info-table">
+              <thead>
+                <tr><th>类型</th><th>定义</th><th>录取概率</th><th>建议数量</th><th>选择标准</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span style="color:#ef4444;font-weight:700">冲一冲</span></td><td>历年录取线高于你10-30分</td><td>20-35%</td><td>2-3所</td><td>有冲劲，可能有惊喜</td></tr>
+                <tr><td><span style="color:#16a34a;font-weight:700">稳一稳</span></td><td>历年录取线与你相近（±10分）</td><td>55-70%</td><td>3-5所</td><td>理性选择的主力志愿</td></tr>
+                <tr><td><span style="color:#2563eb;font-weight:700">保一保</span></td><td>历年录取线低于你20-40分</td><td>85-95%</td><td>2-4所</td><td>确保不滑档的底线</td></tr>
+              </tbody>
+            </table>
+
+            <div class="tip-box">
+              <p><strong>📌 张雪峰推荐策略（12个志愿）：</strong><br>
+              1-2：强冲 | 3-4：冲 | 5-7：稳 | 8-10：稳保 | 11-12：纯保底</p>
+            </div>
+          </div>
+
+          <!-- 第四节 -->
+          <div class="guide-card" id="sec4">
+            <h2>📚 四、如何选择专业</h2>
+
+            <h3>就业导向选专业</h3>
+            <p>以下专业近年就业形势较好，供参考：</p>
+
+            <table class="info-table">
+              <thead>
+                <tr><th>专业类别</th><th>代表专业</th><th>就业方向</th><th>薪资水平</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>计算机类</td><td>软件工程、人工智能</td><td>互联网、金融科技</td><td>⭐⭐⭐⭐⭐</td></tr>
+                <tr><td>医学类</td><td>临床医学、口腔医学</td><td>医院、医药行业</td><td>⭐⭐⭐⭐</td></tr>
+                <tr><td>工程类</td><td>电气、自动化、土木</td><td>制造业、建筑业</td><td>⭐⭐⭐⭐</td></tr>
+                <tr><td>经管类</td><td>金融学、会计学</td><td>银行、证券、审计</td><td>⭐⭐⭐</td></tr>
+                <tr><td>师范类</td><td>汉语言文学、数学</td><td>中小学教师</td><td>⭐⭐⭐</td></tr>
+              </tbody>
+            </table>
+
+            <h3>兴趣与就业的平衡</h3>
+            <p>真正的好专业 = 自己感兴趣 + 市场有需求 + 分数可达到。不要只看排名，适合自己的才是最好的。</p>
+          </div>
+
+          <!-- 第五节 -->
+          <div class="guide-card" id="sec5">
+            <h2>⚠️ 五、常见错误与避坑</h2>
+
+            <div class="tip-box danger">
+              <p><strong>❌ 错误1：志愿顺序乱填</strong><br>
+              平行志愿按顺序检索，第一个被录取就停止。一定要把最想去的院校排在前面！</p>
+            </div>
+            <div class="tip-box danger">
+              <p><strong>❌ 错误2：所有志愿都是冲</strong><br>
+              全部填冲的院校，很可能全部落档！必须留出稳和保的志愿。</p>
+            </div>
+            <div class="tip-box danger">
+              <p><strong>❌ 错误3：忽视专业级差</strong><br>
+              同一所学校不同专业的录取分数差距可达20-50分。填报时需关注专业录取线，不能只看学校线。</p>
+            </div>
+            <div class="tip-box danger">
+              <p><strong>❌ 错误4：不服从调剂</strong><br>
+              不服从专业调剂，在达线但没进心仪专业时会被退档。服从调剂可提高30-50%录取概率。</p>
+            </div>
+            <div class="tip-box danger">
+              <p><strong>❌ 错误5：只参考一年数据</strong><br>
+              单年数据可能有偏差（大小年效应）。建议看近3年数据，取平均值判断。</p>
+            </div>
+          </div>
+
+          <!-- 第六节：FAQ -->
+          <div class="guide-card" id="sec6">
+            <h2>❓ 六、常见问题解答</h2>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">填报志愿时，选学校重要还是选专业重要？<span class="arrow">▼</span></div>
+              <div class="faq-a">
+                要看具体情况：如果是理工科，学校品牌对第一份工作影响大，优先选学校；如果是艺术、医学、法学等专业性强的领域，专业水平比学校排名更重要。一般来说，同等条件下，先保学校层次，再考虑专业方向。
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">什么是"大小年"效应，如何利用？<span class="arrow">▼</span></div>
+              <div class="faq-a">
+                大年：报考该院校的人特别多，录取分数线比往年高；小年：报考人数减少，录取线下降。一般来说，大年后面往往是小年。可以利用这个规律，在大年时报考分数线下降的院校，提高录取概率。
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">进了学校后可以转专业吗？<span class="arrow">▼</span></div>
+              <div class="faq-a">
+                大部分高校允许在大一或大二时申请转专业，但通常有条件：GPA排名靠前（一般前20-30%）、目标专业有名额。热门专业（计算机、金融）竞争激烈，冷门专业转入相对容易。建议入学后多了解本校政策。
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">录取后还能退档重新报吗？<span class="arrow">▼</span></div>
+              <div class="faq-a">
+                一旦被录取，原则上不能退档（除特殊情况如院校出现招生违规）。被录取后放弃需要书面申请，且会影响当年该批次所有志愿。因此填报前要慎重考虑，不要随意填写不打算就读的院校。
+              </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">高考志愿填报网站上的数据可信吗？<span class="arrow">▼</span></div>
+              <div class="faq-a">
+                参考平台数据要注意：①数据来源要可靠，最好是官方或大平台；②历史数据仅供参考，今年情况可能不同；③最终以省级招生考试院官网发布的数据为准。本平台所有数据均来自公开招生数据，仅供参考。
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+    }
+
+    // 目录高亮
+    const sections = document.querySelectorAll('[id^="sec"]');
+    const tocItems = document.querySelectorAll('.toc-item');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 100) current = s.id;
+      });
+      tocItems.forEach(item => {
+        item.classList.toggle('active', item.getAttribute('href') === '#' + current);
+      });
+    });
+  </script>
+</body>
+</html>

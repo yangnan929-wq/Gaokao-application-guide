@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能高考志愿填报系统</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">智填志愿</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">首页</a></li>
+        <li><a href="score.html">成绩分析</a></li>
+        <li><a href="school.html">院校查询</a></li>
+        <li><a href="recommend.html">智能推荐</a></li>
+        <li><a href="ai-chat.html">AI咨询</a></li>
+        <li><a href="guide.html">填报指南</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-outline">登录</a>
+        <a href="register.html" class="btn-primary">免费注册</a>
+      </div>
+      <button class="nav-toggle" id="navToggle">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 英雄区 -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-particle" id="particles"></div>
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>2026年高考志愿填报系统正式上线</span>
+      </div>
+      <h1 class="hero-title">
+        AI赋能，精准填报<br>
+        <span class="highlight-text">让每一分都不浪费</span>
+      </h1>
+      <p class="hero-desc">
+        基于大数据与AI技术，整合全国3000+院校、50000+专业数据，
+        为你提供个性化志愿方案，冲稳保科学搭配。
+      </p>
+      <div class="hero-search">
+        <div class="search-box">
+          <select class="search-province" id="provinceSelect">
+            <option value="">选择省份</option>
+            <option value="guangdong">广东</option>
+            <option value="beijing">北京</option>
+            <option value="shanghai">上海</option>
+            <option value="jiangsu">江苏</option>
+            <option value="zhejiang">浙江</option>
+            <option value="shandong">山东</option>
+            <option value="henan">河南</option>
+            <option value="hubei">湖北</option>
+            <option value="hunan">湖南</option>
+            <option value="sichuan">四川</option>
+            <option value="fujian">福建</option>
+            <option value="anhui">安徽</option>
+          </select>
+          <input type="number" class="search-score" id="scoreInput" placeholder="输入高考分数" min="0" max="750">
+          <select class="search-subject" id="subjectSelect">
+            <option value="">选择科类</option>
+            <option value="理科">理科</option>
+            <option value="文科">文科</option>
+            <option value="新高考">新高考</option>
+          </select>
+          <button class="search-btn" onclick="startQuery()">
+            立即查询
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num" data-target="3000">0</span>
+          <span class="stat-unit">+</span>
+          <span class="stat-label">合作院校</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="500">0</span>
+          <span class="stat-unit">万+</span>
+          <span class="stat-label">历年数据</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="98">0</span>
+          <span class="stat-unit">%</span>
+          <span class="stat-label">推荐准确率</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="200">0</span>
+          <span class="stat-unit">万+</span>
+          <span class="stat-label">服务考生</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 核心功能 -->
+  <section class="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">核心功能</span>
+        <h2>一站式志愿填报服务</h2>
+        <p>从分数分析到最终录取，全程智能陪伴</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card" onclick="location.href='score.html'">
+          <div class="feature-icon icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <h3>分数精准分析</h3>
+          <p>输入成绩，自动计算全省排名，精准定位可报考院校范围</p>
+          <span class="feature-link">开始分析 →</span>
+        </div>
+        <div class="feature-card" onclick="location.href='school.html'">
+          <div class="feature-icon icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <h3>院校全面查询</h3>
+          <p>3000+院校详情，含录取分数线、专业设置、就业情况等信息</p>
+          <span class="feature-link">查询院校 →</span>
+        </div>
+        <div class="feature-card" onclick="location.href='recommend.html'">
+          <div class="feature-icon icon-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <h3>智能志愿推荐</h3>
+          <p>AI算法匹配冲稳保方案，科学搭配志愿梯度，提高录取概率</p>
+          <span class="feature-link">获取推荐 →</span>
+        </div>
+        <div class="feature-card" onclick="location.href='ai-chat.html'">
+          <div class="feature-icon icon-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path>
+            </svg>
+          </div>
+          <h3>AI智能咨询</h3>
+          <p>模拟张雪峰风格，一问一答，直接告诉你该报什么、怎么报</p>
+          <span class="feature-link">立即咨询 →</span>
+        </div>
+        <div class="feature-card" onclick="location.href='guide.html'">
+          <div class="feature-icon icon-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"></path>
+            </svg>
+          </div>
+          <h3>填报指南</h3>
+          <p>详解各批次录取规则、平行志愿原则、服从调剂等关键知识</p>
+          <span class="feature-link">查看指南 →</span>
+        </div>
+        <div class="feature-card" onclick="location.href='compare.html'">
+          <div class="feature-icon icon-teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+          <h3>院校专业对比</h3>
+          <p>多维度横向对比院校、专业，帮助你做出最适合的选择</p>
+          <span class="feature-link">开始对比 →</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 如何使用 -->
+  <section class="how-to">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">使用步骤</span>
+        <h2>三步完成志愿填报</h2>
+        <p>简单高效，让填报不再迷茫</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">01</div>
+          <div class="step-content">
+            <h3>输入成绩信息</h3>
+            <p>填写你的高考分数、选科组合、所在省份，系统自动计算位次和可报范围。</p>
+          </div>
+          <div class="step-arrow">→</div>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <div class="step-content">
+            <h3>AI智能分析</h3>
+            <p>基于3年历史录取数据，AI为你匹配"冲一冲、稳一稳、保一保"的志愿方案。</p>
+          </div>
+          <div class="step-arrow">→</div>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <div class="step-content">
+            <h3>确认并导出</h3>
+            <p>查看详细分析报告，与AI顾问深度沟通，确认最终方案并导出填报表格。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 热门院校 -->
+  <section class="hot-schools">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">热门院校</span>
+        <h2>名校录取分数线参考</h2>
+        <p>2025年各省招生数据（仅供参考）</p>
+      </div>
+      <div class="school-tabs">
+        <button class="tab-btn active" data-tab="985">985院校</button>
+        <button class="tab-btn" data-tab="211">211院校</button>
+        <button class="tab-btn" data-tab="top">热门专业</button>
+      </div>
+      <div class="school-table-wrap">
+        <table class="school-table" id="schoolTable">
+          <thead>
+            <tr>
+              <th>院校名称</th>
+              <th>院校类型</th>
+              <th>所在城市</th>
+              <th>广东最低分(理)</th>
+              <th>广东最低分(文)</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="schoolTbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 用户评价 -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">用户好评</span>
+        <h2>他们都用智填志愿成功上岸</h2>
+      </div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <div class="t-header">
+            <div class="t-avatar" style="background:#4f8ef7">王</div>
+            <div>
+              <div class="t-name">王同学</div>
+              <div class="t-meta">广东 · 623分 → 中山大学</div>
+            </div>
+            <div class="t-stars">★★★★★</div>
+          </div>
+          <p>"系统的智能推荐非常准确，我的分数刚好卡在中大录取线上，系统精准预判了今年的录取趋势，让我一次成功！"</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="t-header">
+            <div class="t-avatar" style="background:#52c41a">李</div>
+            <div>
+              <div class="t-name">李同学</div>
+              <div class="t-meta">湖南 · 598分 → 华南理工大学</div>
+            </div>
+            <div class="t-stars">★★★★★</div>
+          </div>
+          <p>"AI咨询功能太好用了！像在和一个真正懂行的顾问聊天，给我分析了就业前景和报考策略，完全超出预期。"</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="t-header">
+            <div class="t-avatar" style="background:#ff7a45">张</div>
+            <div>
+              <div class="t-name">张同学</div>
+              <div class="t-meta">江苏 · 576分 → 东南大学</div>
+            </div>
+            <div class="t-stars">★★★★★</div>
+          </div>
+          <p>"历年数据非常全面，我对比了好几年的录取情况，最终选择了稳妥的方案，顺利考上了目标学校。"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 底部 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <span class="logo-icon">🎓</span>
+            <span class="logo-text">智填志愿</span>
+          </div>
+          <p>专业的高考志愿填报平台，用AI技术让每一分都发挥最大价值</p>
+        </div>
+        <div class="footer-links">
+          <h4>功能导航</h4>
+          <ul>
+            <li><a href="score.html">成绩分析</a></li>
+            <li><a href="school.html">院校查询</a></li>
+            <li><a href="recommend.html">智能推荐</a></li>
+            <li><a href="ai-chat.html">AI咨询</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>帮助中心</h4>
+          <ul>
+            <li><a href="guide.html">填报指南</a></li>
+            <li><a href="#">常见问题</a></li>
+            <li><a href="#">联系我们</a></li>
+            <li><a href="#">关于我们</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>联系方式</h4>
+          <p>📧 support@zhitian.com</p>
+          <p>📞 400-888-2026</p>
+          <p>⏰ 工作日 9:00-18:00</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 智填志愿 版权所有 | 本平台数据仅供参考，请以官方公告为准</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

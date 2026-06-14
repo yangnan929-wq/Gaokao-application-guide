@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI智能咨询 - 智填志愿</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { padding-top: 68px; background: #f0f4ff; }
+
+    .chat-page {
+      display: flex;
+      height: calc(100vh - 68px);
+    }
+
+    /* 左侧边栏 */
+    .chat-sidebar {
+      width: 260px;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+
+    .new-chat-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .new-chat-btn:hover { background: var(--primary-dark); }
+
+    .history-list { flex: 1; overflow-y: auto; padding: 12px; }
+    .history-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 4px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .history-item:hover { background: var(--bg); }
+    .history-item.active { background: var(--primary-light); color: var(--primary); }
+
+    /* 快捷问题标签 */
+    .quick-tags {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .quick-tags h4 { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; }
+    .quick-tag-list { display: flex; flex-direction: column; gap: 6px; }
+    .quick-tag {
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-family: inherit;
+    }
+    .quick-tag:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+    /* 主聊天区 */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 16px 24px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ai-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 1rem;
+    }
+
+    .ai-info h4 { font-size: 0.95rem; font-weight: 600; }
+    .ai-info p { font-size: 0.82rem; color: var(--text-muted); }
+
+    .online-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin-left: auto;
+      animation: pulse 2s infinite;
+    }
+
+    /* 消息列表 */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 80%;
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+      align-self: flex-end;
+    }
+
+    .msg-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+      color: #fff;
+    }
+
+    .msg-avatar.ai-av { background: linear-gradient(135deg, #2563eb, #7c3aed); }
+    .msg-avatar.user-av { background: linear-gradient(135deg, #f97316, #ec4899); }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .message.ai .msg-bubble {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 4px 16px 16px 16px;
+    }
+
+    .message.user .msg-bubble {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      border-radius: 16px 4px 16px 16px;
+    }
+
+    .msg-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
+    .message.ai .msg-time { text-align: left; }
+
+    /* 输入区 */
+    .chat-input-area {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .qa-chip {
+      padding: 5px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .qa-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .chat-textarea {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: none;
+      min-height: 48px;
+      max-height: 120px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+    .chat-textarea:focus { border-color: var(--primary); }
+
+    .send-btn {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .typing-indicator {
+      display: flex; gap: 4px; align-items: center; padding: 8px 4px;
+    }
+    .typing-dot {
+      width: 8px; height: 8px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+    }
+
+    /* 欢迎卡片 */
+    .welcome-card {
+      background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(124,58,237,0.08));
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .welcome-card h4 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+    .welcome-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+    @media (max-width: 768px) {
+      .chat-sidebar { display: none; }
+      .message { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">智填志愿</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="score.html">成绩分析</a></li>
+        <li><a href="school.html">院校查询</a></li>
+        <li><a href="recommend.html">智能推荐</a></li>
+        <li><a href="ai-chat.html" class="active">AI咨询</a></li>
+        <li><a href="guide.html">填报指南</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-outline">登录</a>
+        <a href="register.html" class="btn-primary">免费注册</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="chat-page">
+    <!-- 侧边栏 -->
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <h3>对话记录</h3>
+        <button class="new-chat-btn" onclick="newChat()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          新建对话
+        </button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-item active">关于中山大学报考建议</div>
+        <div class="history-item">理工类专业就业前景</div>
+        <div class="history-item">平行志愿规则详解</div>
+      </div>
+      <div class="quick-tags">
+        <h4>常见问题</h4>
+        <div class="quick-tag-list">
+          <button class="quick-tag" onclick="quickAsk('如何判断院校是否在我的可报范围？')">如何判断可报范围？</button>
+          <button class="quick-tag" onclick="quickAsk('平行志愿的填报顺序重要吗？')">平行志愿顺序？</button>
+          <button class="quick-tag" onclick="quickAsk('哪些专业就业前景好？')">就业前景好的专业</button>
+          <button class="quick-tag" onclick="quickAsk('服从调剂有什么风险？')">服从调剂的风险</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主聊天区 -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <div class="ai-avatar">AI</div>
+        <div class="ai-info">
+          <h4>志愿AI顾问</h4>
+          <p>基于大数据，专业志愿填报指导</p>
+        </div>
+        <div class="online-dot"></div>
+      </div>
+
+      <div class="messages" id="messages">
+        <!-- 欢迎消息 -->
+        <div class="message ai">
+          <div class="msg-avatar ai-av">AI</div>
+          <div>
+            <div class="msg-bubble">
+              <div class="welcome-card">
+                <h4>您好！我是智填志愿AI顾问</h4>
+                <p>我可以帮您解答高考志愿填报的各种问题，包括院校分析、专业选择、录取规则、就业前景等。请把您的情况告诉我，让我为您提供专业建议！</p>
+              </div>
+              <br>
+              <strong>您可以这样问我：</strong><br>
+              • "我是广东考生，620分，理科，该报什么学校？"<br>
+              • "计算机和软件工程哪个专业更好就业？"<br>
+              • "中山大学和华南理工大学怎么选择？"<br>
+              • "平行志愿应该怎么填报策略？"
+            </div>
+            <div class="msg-time">今天 15:30</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="quick-actions">
+          <button class="qa-chip" onclick="quickAsk('我是广东考生，620分理科，该怎么报志愿？')">620分理科广东考生</button>
+          <button class="qa-chip" onclick="quickAsk('计算机专业就业前景如何？')">计算机就业</button>
+          <button class="qa-chip" onclick="quickAsk('如何合理搭配冲稳保？')">冲稳保策略</button>
+          <button class="qa-chip" onclick="quickAsk('广东有哪些好大学？')">广东院校推荐</button>
+        </div>
+        <div class="input-row">
+          <textarea
+            class="chat-textarea"
+            id="userInput"
+            placeholder="输入你的问题，如：我是广东考生，650分，理科，有什么推荐的大学？"
+            rows="2"
+            onkeydown="handleKeydown(event)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    const messages = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    let isTyping = false;
+
+    function getTime() {
+      return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addMessage(role, content) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      const isAI = role === 'ai';
+      div.innerHTML = `
+        <div class="msg-avatar ${isAI ? 'ai-av' : 'user-av'}">${isAI ? 'AI' : '我'}</div>
+        <div>
+          <div class="msg-bubble">${content}</div>
+          <div class="msg-time">${getTime()}</div>
+        </div>
+      `;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
+    }
+
+    function showTyping() {
+      const div = document.createElement('div');
+      div.className = 'message ai';
+      div.id = 'typingMsg';
+      div.innerHTML = `
+        <div class="msg-avatar ai-av">AI</div>
+        <div>
+          <div class="msg-bubble">
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function removeTyping() {
+      document.getElementById('typingMsg')?.remove();
+    }
+
+    // AI 回复逻辑（模拟本地RAG）
+    function generateResponse(q) {
+      q = q.toLowerCase();
+
+      if (q.includes('广东') && q.includes('分') && (q.includes('理科') || q.includes('物理'))) {
+        const scoreMatch = q.match(/(\d{3})/);
+        const score = scoreMatch ? parseInt(scoreMatch[1]) : 600;
+        if (score >= 650) return `<strong>针对广东${score}分理科考生的建议：</strong><br><br>
+          <strong>🔥 冲一冲（成功率30%）：</strong><br>
+          • 中山大学 - 历年广东理科约635分<br>
+          • 南方科技大学 - 约621分<br><br>
+          <strong>✅ 稳一稳（成功率60%）：</strong><br>
+          • 华南理工大学 - 约619分，工科实力强<br>
+          • 暨南大学 - 约598分，地处广州资源好<br><br>
+          <strong>🛡️ 保一保（成功率90%）：</strong><br>
+          • 华南师范大学 - 约587分<br>
+          • 广东外语外贸大学 - 约574分<br><br>
+          <strong>张雪峰式建议：</strong>你的分数可以冲中山大，但要有心理准备可能落档。建议把华南理工作为主力，那是广东理工最好的，就业强。`;
+        return `<strong>广东${score}分理科建议：</strong><br><br>
+          这个分数段竞争激烈，建议冲刺暨南大学、深圳大学等，稳住广东工业大学、广州大学，保底广东财经大学。<br><br>
+          <strong>关键建议：</strong>服从专业调剂很重要，可以大幅提高录取概率。`;
+      }
+
+      if (q.includes('计算机') || q.includes('软件工程') || q.includes('人工智能')) {
+        return `<strong>计算机/软件工程专业分析：</strong><br><br>
+          <strong>就业形势（2025数据）：</strong><br>
+          • 平均薪资：本科毕业起薪约12,000-18,000元/月<br>
+          • 就业率：>95%，供不应求<br>
+          • 主要去向：互联网大厂、银行科技部门、国企信息部<br><br>
+          <strong>热门方向：</strong><br>
+          • 人工智能/大数据：最火，但竞争也最大<br>
+          • 网络安全：需求旺，薪资高<br>
+          • 嵌入式/物联网：稳定需求<br><br>
+          <strong>张雪峰式建议：</strong>计算机是王道专业，分数够就报！211的计算机比985的部分专业强，认准华南理工、暨南大学的计算机系。`;
+      }
+
+      if (q.includes('平行志愿') || q.includes('志愿顺序') || q.includes('怎么填')) {
+        return `<strong>平行志愿填报策略详解：</strong><br><br>
+          <strong>核心规则：</strong><br>
+          平行志愿按"分数优先，遵循志愿"原则，从高到低检索，一旦匹配即录取，不再看后续志愿。<br><br>
+          <strong>正确策略（以广东12个志愿为例）：</strong><br>
+          • 志愿1-2：冲一冲（超出历史录取线5-20分）<br>
+          • 志愿3-6：稳一稳（与历史录取线持平或低5分内）<br>
+          • 志愿7-10：保一保（低于历史录取线20-40分）<br>
+          • 志愿11-12：保底志愿（确保不滑档）<br><br>
+          <strong>关键误区：</strong><br>
+          ❌ 不要把高分院校放在后面——一旦前面录不上，分高的院校也会被略过<br>
+          ✅ 服从调剂可以提高30%以上的录取概率，建议勾选`;
+      }
+
+      if (q.includes('冲稳保')) {
+        return `<strong>冲稳保搭配策略：</strong><br><br>
+          <strong>经典比例：3:4:3</strong><br>
+          • 冲（30%志愿）：高出历史分10-20分的院校<br>
+          • 稳（40%志愿）：历史分上下5分的院校<br>
+          • 保（30%志愿）：低于历史分20-40分的院校<br><br>
+          <strong>选学校还是选专业？</strong><br>
+          这是个永恒难题。建议：<br>
+          • 理工科：优先学校品牌（影响第一份工作）<br>
+          • 文科/经管：优先专业方向（课程体系很重要）<br>
+          • 医学：专业>学校（执照考试才是关键）`;
+      }
+
+      if (q.includes('服从调剂')) {
+        return `<strong>关于服从专业调剂：</strong><br><br>
+          <strong>什么是服从调剂？</strong><br>
+          当你的分数达到院校录取线但没进入填报的专业时，学校可以把你调剂到招生未满的专业。<br><br>
+          <strong>勾选建议：</strong><br>
+          ✅ 强烈建议勾选！原因：<br>
+          • 可提高录取概率约30-50%<br>
+          • 大部分专业转专业政策相对宽松<br>
+          • 进了学校再转方向，比滑档好太多<br><br>
+          <strong>风险提示：</strong><br>
+          • 可能被调剂到冷门专业（如:某院校的档案学、图书馆学）<br>
+          • 建议在志愿卡上备注"不愿意调剂的专业"<br><br>
+          <strong>张雪峰原话：</strong>"服从调剂！宁可调剂到差专业进好学校，也不要因为不服从调剂而滑档！"`;
+      }
+
+      if (q.includes('广东') && q.includes('大学')) {
+        return `<strong>广东高校综合推荐：</strong><br><br>
+          <strong>第一梯队（985/双一流）：</strong><br>
+          🥇 中山大学 - 综合最强，录取分约635<br>
+          🥈 华南理工大学 - 工科王牌，就业天花板，录取分约619<br>
+          🥉 南方科技大学 - 新兴强校，录取分约621<br><br>
+          <strong>第二梯队（211）：</strong><br>
+          • 暨南大学 - 华侨大学，资源好，录取分约598<br>
+          • 华南师范大学 - 师范类最强，录取分约587<br><br>
+          <strong>第三梯队（双非本科）：</strong><br>
+          • 深圳大学 - 地处深圳，就业强<br>
+          • 广东外语外贸大学 - 外贸/国际商务首选<br>
+          • 广州大学 - 综合性强，性价比高`;
+      }
+
+      // 默认回复
+      const defaults = [
+        `感谢你的提问！请告诉我更多你的情况，比如：<br>• 你在哪个省份？<br>• 你的高考分数大约多少？<br>• 理科还是文科？<br>• 有没有倾向的专业或城市？<br><br>有了这些信息，我才能给你最精准的建议！`,
+        `这是个很好的问题！志愿填报是人生重大决策，建议我们系统地来分析。你能告诉我你的省份和分数吗？这样我可以给你针对性的建议。`,
+        `关于志愿填报，最重要的是：<br>1. 了解自己的分数和排名<br>2. 明确专业兴趣和未来方向<br>3. 科学搭配冲稳保<br>4. 了解目标院校的录取规则<br><br>你现在最想了解哪方面？`,
+      ];
+      return defaults[Math.floor(Math.random() * defaults.length)];
+    }
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text || isTyping) return;
+
+      isTyping = true;
+      sendBtn.disabled = true;
+      addMessage('user', text);
+      userInput.value = '';
+      userInput.style.height = 'auto';
+
+      showTyping();
+
+      // 模拟AI思考时间
+      await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+
+      removeTyping();
+      const response = generateResponse(text);
+      addMessage('ai', response);
+
+      isTyping = false;
+      sendBtn.disabled = false;
+
+      // 保存到历史
+      const historyEl = document.getElementById('historyList');
+      const item = document.createElement('div');
+      item.className = 'history-item active';
+      item.textContent = text.substring(0, 20) + (text.length > 20 ? '...' : '');
+      historyEl.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
+      historyEl.insertBefore(item, historyEl.firstChild);
+    }
+
+    function quickAsk(text) {
+      userInput.value = text;
+      sendMessage();
+    }
+
+    function newChat() {
+      messages.innerHTML = `
+        <div class="message ai">
+          <div class="msg-avatar ai-av">AI</div>
+          <div>
+            <div class="msg-bubble">
+              <div class="welcome-card">
+                <h4>新对话开始</h4>
+                <p>有什么关于志愿填报的问题，直接问我吧！</p>
+              </div>
+            </div>
+            <div class="msg-time">${getTime()}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // 自动调整输入框高度
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  </script>
+</body>
+</html>

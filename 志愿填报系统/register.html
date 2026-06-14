@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免费注册 - 智填志愿</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0c1f5e 0%, #1e3a8a 40%, #4338ca 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-box {
+      background: #fff;
+      border-radius: 24px;
+      padding: 44px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 28px;
+    }
+    .auth-logo span:first-child { font-size: 2rem; }
+
+    .auth-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    .auth-sub { font-size: 0.88rem; color: var(--text-muted); text-align: center; margin-bottom: 28px; }
+
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .auth-input {
+      width: 100%;
+      padding: 11px 12px 11px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .auth-input:focus { border-color: var(--primary); }
+
+    .code-row { display: flex; gap: 10px; }
+    .code-row .auth-input { flex: 1; }
+    .get-code-btn {
+      padding: 0 16px;
+      border: 1.5px solid var(--primary);
+      border-radius: 9px;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .get-code-btn:hover { background: var(--primary); color: #fff; }
+    .get-code-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #fff; color: var(--text-muted); border-color: var(--border); }
+
+    .agree-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 16px 0 20px;
+    }
+    .agree-row input { margin-top: 3px; }
+    .agree-row label { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+    .agree-row a { color: var(--primary); }
+
+    .auth-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    .auth-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.35); }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+    .login-link a { color: var(--primary); font-weight: 600; }
+
+    .benefits {
+      background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.05));
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .benefit-item { text-align: center; font-size: 0.82rem; color: var(--text-secondary); }
+    .benefit-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <div class="auth-logo">
+      <span>🎓</span>
+      <span>智填志愿</span>
+    </div>
+
+    <h1 class="auth-title">免费注册</h1>
+    <p class="auth-sub">注册即可享受完整智能推荐服务</p>
+
+    <div class="benefits">
+      <div class="benefit-item"><div class="benefit-icon">📊</div>无限次分析</div>
+      <div class="benefit-item"><div class="benefit-icon">💾</div>保存方案</div>
+      <div class="benefit-item"><div class="benefit-icon">🤖</div>AI深度咨询</div>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label class="form-label">姓名</label>
+        <div class="input-wrap">
+          <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <input type="text" class="auth-input" id="regName" placeholder="真实姓名">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">身份</label>
+        <div class="input-wrap" style="padding-left:0">
+          <select class="auth-input" id="regRole" style="padding-left:12px">
+            <option value="student">考生本人</option>
+            <option value="parent">家长</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">手机号</label>
+      <div class="input-wrap">
+        <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"></path></svg>
+        <input type="tel" class="auth-input" id="regPhone" placeholder="请输入手机号">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">验证码</label>
+      <div class="code-row">
+        <div class="input-wrap" style="flex:1">
+          <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+          <input type="text" class="auth-input" id="regCode" placeholder="6位验证码">
+        </div>
+        <button class="get-code-btn" id="codeBtn" onclick="getCode()">获取验证码</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">设置密码</label>
+      <div class="input-wrap">
+        <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+        <input type="password" class="auth-input" id="regPwd" placeholder="8位以上，含字母和数字">
+      </div>
+    </div>
+
+    <div class="agree-row">
+      <input type="checkbox" id="agree">
+      <label for="agree">我已阅读并同意 <a href="#">《服务协议》</a> 和 <a href="#">《隐私政策》</a></label>
+    </div>
+
+    <button class="auth-btn" onclick="doRegister()">立即注册（免费）</button>
+
+    <div class="login-link">
+      已有账号？ <a href="login.html">直接登录</a>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    let codeTimer = null;
+
+    function getCode() {
+      const phone = document.getElementById('regPhone').value;
+      if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('请输入有效的手机号', 'error'); return; }
+
+      const btn = document.getElementById('codeBtn');
+      btn.disabled = true;
+      let sec = 60;
+      btn.textContent = `${sec}s后重发`;
+      showToast('验证码已发送（演示模式）', 'info');
+
+      codeTimer = setInterval(() => {
+        sec--;
+        if (sec <= 0) {
+          clearInterval(codeTimer);
+          btn.disabled = false;
+          btn.textContent = '获取验证码';
+        } else {
+          btn.textContent = `${sec}s后重发`;
+        }
+      }, 1000);
+    }
+
+    function doRegister() {
+      const name = document.getElementById('regName').value;
+      const phone = document.getElementById('regPhone').value;
+      const code = document.getElementById('regCode').value;
+      const pwd = document.getElementById('regPwd').value;
+      const agree = document.getElementById('agree').checked;
+
+      if (!name) { showToast('请输入姓名', 'error'); return; }
+      if (!phone) { showToast('请输入手机号', 'error'); return; }
+      if (!code) { showToast('请输入验证码', 'error'); return; }
+      if (pwd.length < 8) { showToast('密码至少8位', 'error'); return; }
+      if (!agree) { showToast('请阅读并同意服务协议', 'error'); return; }
+
+      showToast('注册成功！正在跳转...', 'success');
+      setTimeout(() => { location.href = 'score.html'; }, 1200);
+    }
+  </script>
+</body>
+</html>
