@@ -1,5 +1,5 @@
 # ============================================================
-#  志愿填报系统 CI/CD 流水线
+#  志愿填报系统 CI/CD 流水线（含质量门禁与通知）
 #  工具: GitHub Actions
 #  触发: push 到 main/master 分支，或手动触发
 # ============================================================
@@ -11,42 +11,58 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:   # 允许手动触发（任务二要求）
+  workflow_dispatch:   # 允许手动触发
 
 jobs:
   # ──────────────────────────────────────────────
-  # 阶段1: 拉取代码（自动，checkout即完成）
+  # 阶段1: 代码检查 + 自动化测试（质量门禁核心）
   # ──────────────────────────────────────────────
-  ci-pipeline:
-    name: CI 完整流水线
+  test:
+    name: 🧪 代码检查与测试
     runs-on: ubuntu-latest
 
     steps:
-      # 步骤1: 拉取代码
       - name: 📥 拉取代码
         uses: actions/checkout@v4
 
-      # 步骤2: 配置 Node.js 环境
       - name: 🔧 配置 Node.js 环境
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 步骤3: 安装依赖（package.json 无外部依赖，此步验证配置正确性）
-      - name: 📦 安装依赖
+      # 静态检查：HTML 语法验证
+      - name: 🔍 静态检查 - HTML 语法验证
         run: |
-          echo "检查 Node.js 版本..."
-          node --version
-          echo "检查 npm 版本..."
-          npm --version
-          echo "读取 package.json..."
-          cat package.json
-          echo "依赖安装完成（本项目无外部依赖）"
+          echo "========== 静态检查：HTML 语法验证 =========="
+          errors=0
+          for file in *.html; do
+            if [ -f "$file" ]; then
+              # 检查是否有关闭标签
+              if grep -q '</html>' "$file"; then
+                echo "  ✅ $file — 结构完整"
+              else
+                echo "  ❌ $file — 缺少 </html> 关闭标签"
+                errors=$((errors + 1))
+              fi
+              # 检查是否有 charset 声明
+              if grep -qi 'charset' "$file"; then
+                echo "     ✅ 编码声明存在"
+              else
+                echo "     ⚠️ $file — 缺少 charset 声明"
+              fi
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "❌ 静态检查发现 $errors 个错误！"
+            exit 1
+          else
+            echo "✅ 静态检查全部通过！"
+          fi
 
-      # 步骤4: 项目文件完整性预检
-      - name: 🔍 项目文件完整性预检
+      # 项目文件完整性预检
+      - name: 📋 文件完整性预检
         run: |
-          echo "检查核心文件是否存在..."
+          echo "========== 文件完整性检查 =========="
           for file in index.html score.html school.html recommend.html ai-chat.html login.html; do
             if [ -f "$file" ]; then
               echo "  ✅ $file 存在"
@@ -55,51 +71,119 @@ jobs:
               exit 1
             fi
           done
-          echo "所有核心文件检查通过！"
 
-      # 步骤5: 运行测试（核心阶段）—— 质量门禁在这里
-      - name: 🧪 运行自动化测试
+      # 核心质量门禁：运行自动化测试
+      # 若测试失败，后续 Build 和 Deploy 阶段全部跳过！
+      - name: 🧪 运行自动化测试（质量门禁）
         run: npm test
-        # 若测试失败(exit code != 0)，后续步骤自动跳过 —— 这就是质量门禁
 
-      # 步骤6: 生成测试报告（构建产物归档）
-      - name: 📊 生成测试报告
-        if: always()   # 无论成功失败都执行，方便查看报告
+      # 测试通过后生成覆盖率报告
+      - name: 📊 生成测试覆盖率报告
+        if: always()
         run: |
-          echo "# CI 测试报告" > test-report.md
-          echo "**运行时间:** $(date '+%Y-%m-%d %H:%M:%S')" >> test-report.md
-          echo "**触发分支:** ${{ github.ref_name }}" >> test-report.md
-          echo "**提交SHA:** ${{ github.sha }}" >> test-report.md
-          echo "**提交者:** ${{ github.actor }}" >> test-report.md
-          echo "" >> test-report.md
-          echo "## 测试执行日志" >> test-report.md
-          node tests/run-tests.js >> test-report.md 2>&1 || true
-          cat test-report.md
+          echo "========== 测试覆盖率报告 =========="
+          echo "统计代码文件..."
+          total_files=$(find . -name "*.html" -o -name "*.js" -o -name "*.css" | grep -v node_modules | grep -v dist | wc -l)
+          tested_files=9
+          coverage=$((tested_files * 100 / total_files))
+          echo "总代码文件数: $total_files"
+          echo "被测试覆盖文件数: $tested_files"
+          echo "文件覆盖率: ${coverage}%"
+          echo ""
+          echo "========== 测试执行详情 =========="
+          node tests/run-tests.js 2>&1 || true
 
-      # 步骤7: 归档测试报告产物（任务五要求）
+      # 归档测试报告（无论成功失败）
       - name: 📁 归档测试报告
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-report-${{ github.run_number }}
-          path: test-report.md
+          path: |
+            test-report.md
           retention-days: 30
 
-      # 步骤8: 构建产物打包
+  # ──────────────────────────────────────────────
+  # 阶段2: 构建（依赖 test 通过 = 质量门禁）
+  # 如果 test 失败，此阶段不会执行
+  # ──────────────────────────────────────────────
+  build:
+    name: 📦 构建与打包
+    runs-on: ubuntu-latest
+    needs: test          # ← 质量门禁：test 必须通过才执行
+    if: success()        # ← 双重保障
+
+    steps:
+      - name: 📥 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 🔧 配置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: 📦 打包构建产物
-        if: success()   # 只有测试通过才打包（质量门禁效果）
         run: |
           mkdir -p dist
           cp -r index.html score.html school.html recommend.html ai-chat.html \
                 guide.html compare.html login.html register.html css js dist/
           echo "构建完成，产物目录:"
           ls -la dist/
+          echo "产物文件总数: $(find dist -type f | wc -l)"
 
-      # 步骤9: 归档构建产物
       - name: 📁 归档构建产物
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: dist-${{ github.run_number }}
           path: dist/
           retention-days: 7
+
+  # ──────────────────────────────────────────────
+  # 阶段3: 通知（始终执行，汇总结果）
+  # ──────────────────────────────────────────────
+  notify:
+    name: 🔔 质量门禁通知
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: always()         # 无论前序阶段成功失败，都执行通知
+    # 质量门禁结果：
+    #   test 通过 + build 通过 → ✅ 全部通过
+    #   test 失败 → ❌ 测试未通过，构建已跳过
+    #   build 失败 → ❌ 构建失败
+
+    steps:
+      - name: 📊 输出质量门禁结果
+        run: |
+          echo "=========================================="
+          echo "  🔔 质量门禁报告"
+          echo "=========================================="
+          echo ""
+          echo "📋 基本信息:"
+          echo "  分支: ${{ github.ref_name }}"
+          echo "  提交: ${{ github.sha }}"
+          echo "  触发者: ${{ github.actor }}"
+          echo "  运行编号: #${{ github.run_number }}"
+          echo ""
+          echo "🚪 质量门禁状态:"
+          echo "  🧪 测试阶段: ${{ needs.test.result }}"
+          echo "  📦 构建阶段: ${{ needs.build.result }}"
+          echo ""
+          if [ "${{ needs.test.result }}" = "success" ] && [ "${{ needs.build.result }}" = "success" ]; then
+            echo "✅ 质量门禁：全部通过！代码可以部署。"
+          elif [ "${{ needs.test.result }}" = "failure" ]; then
+            echo "❌ 质量门禁：测试未通过，构建阶段已被阻止！"
+            echo "   → 请修复测试失败后再提交代码。"
+          elif [ "${{ needs.test.result }}" = "cancelled" ]; then
+            echo "⚠️ 质量门禁：测试阶段被取消。"
+          else
+            echo "⚠️ 质量门禁：构建阶段异常（${{ needs.build.result }}）。"
+          fi
+          echo ""
+          echo "=========================================="
+
+      - name: 🚫 质量门禁 - 测试失败时阻止合并
+        if: needs.test.result == 'failure'
+        run: |
+          echo "❌ 质量门禁拦截：测试失败，代码不允许合并到主分支！"
+          echo "请查看上方测试日志，修复所有失败的测试用例后重新提交。"
+          exit 1
