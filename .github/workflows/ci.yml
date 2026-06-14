@@ -1,0 +1,105 @@
+# ============================================================
+#  志愿填报系统 CI/CD 流水线
+#  工具: GitHub Actions
+#  触发: push 到 main/master 分支，或手动触发
+# ============================================================
+
+name: 志愿填报系统 CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:   # 允许手动触发（任务二要求）
+
+jobs:
+  # ──────────────────────────────────────────────
+  # 阶段1: 拉取代码（自动，checkout即完成）
+  # ──────────────────────────────────────────────
+  ci-pipeline:
+    name: CI 完整流水线
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步骤1: 拉取代码
+      - name: 📥 拉取代码
+        uses: actions/checkout@v4
+
+      # 步骤2: 配置 Node.js 环境
+      - name: 🔧 配置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 步骤3: 安装依赖（package.json 无外部依赖，此步验证配置正确性）
+      - name: 📦 安装依赖
+        run: |
+          echo "检查 Node.js 版本..."
+          node --version
+          echo "检查 npm 版本..."
+          npm --version
+          echo "读取 package.json..."
+          cat package.json
+          echo "依赖安装完成（本项目无外部依赖）"
+
+      # 步骤4: 项目文件完整性预检
+      - name: 🔍 项目文件完整性预检
+        run: |
+          echo "检查核心文件是否存在..."
+          for file in index.html score.html school.html recommend.html ai-chat.html login.html; do
+            if [ -f "$file" ]; then
+              echo "  ✅ $file 存在"
+            else
+              echo "  ❌ $file 不存在！"
+              exit 1
+            fi
+          done
+          echo "所有核心文件检查通过！"
+
+      # 步骤5: 运行测试（核心阶段）—— 质量门禁在这里
+      - name: 🧪 运行自动化测试
+        run: npm test
+        # 若测试失败(exit code != 0)，后续步骤自动跳过 —— 这就是质量门禁
+
+      # 步骤6: 生成测试报告（构建产物归档）
+      - name: 📊 生成测试报告
+        if: always()   # 无论成功失败都执行，方便查看报告
+        run: |
+          echo "# CI 测试报告" > test-report.md
+          echo "**运行时间:** $(date '+%Y-%m-%d %H:%M:%S')" >> test-report.md
+          echo "**触发分支:** ${{ github.ref_name }}" >> test-report.md
+          echo "**提交SHA:** ${{ github.sha }}" >> test-report.md
+          echo "**提交者:** ${{ github.actor }}" >> test-report.md
+          echo "" >> test-report.md
+          echo "## 测试执行日志" >> test-report.md
+          node tests/run-tests.js >> test-report.md 2>&1 || true
+          cat test-report.md
+
+      # 步骤7: 归档测试报告产物（任务五要求）
+      - name: 📁 归档测试报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-report-${{ github.run_number }}
+          path: test-report.md
+          retention-days: 30
+
+      # 步骤8: 构建产物打包
+      - name: 📦 打包构建产物
+        if: success()   # 只有测试通过才打包（质量门禁效果）
+        run: |
+          mkdir -p dist
+          cp -r index.html score.html school.html recommend.html ai-chat.html \
+                guide.html compare.html login.html register.html css js dist/
+          echo "构建完成，产物目录:"
+          ls -la dist/
+
+      # 步骤9: 归档构建产物
+      - name: 📁 归档构建产物
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dist-${{ github.run_number }}
+          path: dist/
+          retention-days: 7

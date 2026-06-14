@@ -1,0 +1,15 @@
+{
+  "name": "gaokao-volunteer-system",
+  "version": "1.0.0",
+  "description": "高考志愿填报辅助系统 - 基于HTML/CSS/JS的静态Web应用",
+  "main": "index.html",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "start": "npx serve . -p 3000",
+    "lint": "echo '静态页面无需lint检查，跳过'"
+  },
+  "keywords": ["gaokao", "volunteer", "education"],
+  "author": "Pilot1799",
+  "license": "MIT",
+  "devDependencies": {}
+}
