@@ -150,7 +150,8 @@ function getVolunteerStrategy(score, rank) {
 
 test('高分段（700分）排名估算合理（应在前5000名）', () => {
   const rank = calculateRank(700);
-  expect(rank <= 5000).toBeTrue();
+  // BUG: 故意制造断言错误 —— 期望排名为1（实际约2000），用于演示CI失败场景
+  expect(rank).toBe(1);
 });
 
 test('中等分（580分）排名估算合理（应在3万名以内）', () => {
