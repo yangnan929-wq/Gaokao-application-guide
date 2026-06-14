@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能志愿推荐 - 智填志愿</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { padding-top: 68px; }
+    .recommend-page { padding: 40px 0 80px; }
+
+    /* 步骤导航 */
+    .steps-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+
+    .step-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      position: relative;
+    }
+
+    .step-nav-item.done {
+      color: var(--success);
+    }
+
+    .step-nav-item.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .step-nav-item.done .step-circle { background: var(--success); color: #fff; }
+    .step-nav-item.active .step-circle { background: var(--primary); color: #fff; }
+
+    .step-connector {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+    }
+    .step-connector.done { background: var(--success); }
+
+    /* 步骤内容 */
+    .step-content-area { display: none; }
+    .step-content-area.show { display: block; }
+
+    /* 信息填写 */
+    .info-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .info-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .info-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+    .subject-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+    .subject-tag {
+      padding: 8px 18px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      background: #fff;
+    }
+    .subject-tag.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+    /* 偏好设置 */
+    .pref-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .pref-option {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pref-option.selected { border-color: var(--primary); background: var(--primary-light); }
+    .pref-option h5 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+    .pref-option p { font-size: 0.83rem; color: var(--text-secondary); }
+
+    .btn-next {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+      margin-top: 24px;
+    }
+    .btn-next:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+
+    /* 推荐结果 */
+    .recommend-summary {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb, #7c3aed);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      color: #fff;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      text-align: center;
+    }
+
+    .rs-item .rs-val { font-size: 1.8rem; font-weight: 800; }
+    .rs-item .rs-label { font-size: 0.85rem; opacity: 0.8; margin-top: 4px; }
+
+    .recommend-section { margin-bottom: 32px; }
+    .recommend-section h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
+    .recommend-section.rush h3 { background: #fef3c7; color: #92400e; }
+    .recommend-section.stable h3 { background: #dcfce7; color: #166534; }
+    .recommend-section.safe h3 { background: #dbeafe; color: #1e40af; }
+
+    .recommend-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .recommend-item:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+
+    .ri-num {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+    .rush .ri-num { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .stable .ri-num { background: linear-gradient(135deg, #10b981, #0ea5e9); }
+    .safe .ri-num { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+
+    .ri-info {}
+    .ri-name { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+    .ri-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .ri-meta { font-size: 0.83rem; color: var(--text-secondary); }
+
+    .ri-score { text-align: right; }
+    .ri-score-num { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+    .ri-score-label { font-size: 0.78rem; color: var(--text-muted); }
+    .ri-prob { font-size: 0.82rem; font-weight: 600; margin-top: 4px; }
+    .prob-high { color: var(--success); }
+    .prob-mid { color: var(--warning); }
+    .prob-low { color: var(--danger); }
+
+    .export-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: #fff;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .export-btn:hover { background: var(--primary); color: #fff; }
+
+    @media (max-width: 768px) {
+      .info-grid { grid-template-columns: 1fr 1fr; }
+      .pref-grid { grid-template-columns: 1fr; }
+      .recommend-summary { grid-template-columns: repeat(2, 1fr); }
+      .recommend-item { grid-template-columns: 36px 1fr; }
+      .ri-score { display: none; }
+    }
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .steps-nav { gap: 0; }
+      .step-nav-item span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">智填志愿</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="score.html">成绩分析</a></li>
+        <li><a href="school.html">院校查询</a></li>
+        <li><a href="recommend.html" class="active">智能推荐</a></li>
+        <li><a href="ai-chat.html">AI咨询</a></li>
+        <li><a href="guide.html">填报指南</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-outline">登录</a>
+        <a href="register.html" class="btn-primary">免费注册</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="recommend-page">
+    <div class="container">
+      <!-- 步骤导航 -->
+      <div class="steps-nav">
+        <div class="step-nav-item active" id="nav1">
+          <div class="step-circle">1</div>
+          <span>基本信息</span>
+        </div>
+        <div class="step-connector" id="conn1"></div>
+        <div class="step-nav-item" id="nav2">
+          <div class="step-circle">2</div>
+          <span>个人偏好</span>
+        </div>
+        <div class="step-connector" id="conn2"></div>
+        <div class="step-nav-item" id="nav3">
+          <div class="step-circle">3</div>
+          <span>智能推荐</span>
+        </div>
+      </div>
+
+      <!-- 步骤1：基本信息 -->
+      <div class="step-content-area show" id="step1">
+        <div class="info-card">
+          <h3>填写基本信息</h3>
+          <div class="info-grid">
+            <div class="form-group">
+              <label class="form-label">高考总分 *</label>
+              <input type="number" class="form-input" id="recScore" placeholder="输入分数" min="0" max="750" value="">
+            </div>
+            <div class="form-group">
+              <label class="form-label">所在省份 *</label>
+              <select class="form-select" id="recProvince">
+                <option value="">请选择</option>
+                <option value="广东" selected>广东</option>
+                <option value="北京">北京</option>
+                <option value="上海">上海</option>
+                <option value="江苏">江苏</option>
+                <option value="浙江">浙江</option>
+                <option value="湖北">湖北</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">科目类型 *</label>
+              <select class="form-select" id="recSubjectType">
+                <option value="理科">理科（物理）</option>
+                <option value="文科">文科（历史）</option>
+                <option value="新高考">新高考</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>新高考选科（理科或文科可跳过）</h3>
+          <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:16px">
+            如果是新高考，请选择已选的3门科目
+          </p>
+          <div class="subject-tags">
+            <button class="subject-tag" onclick="toggleSubject(this,'物理')">物理</button>
+            <button class="subject-tag" onclick="toggleSubject(this,'化学')">化学</button>
+            <button class="subject-tag" onclick="toggleSubject(this,'生物')">生物</button>
+            <button class="subject-tag" onclick="toggleSubject(this,'历史')">历史</button>
+            <button class="subject-tag" onclick="toggleSubject(this,'政治')">政治</button>
+            <button class="subject-tag" onclick="toggleSubject(this,'地理')">地理</button>
+          </div>
+        </div>
+
+        <button class="btn-next" onclick="goStep2()">下一步：填写个人偏好 →</button>
+      </div>
+
+      <!-- 步骤2：个人偏好 -->
+      <div class="step-content-area" id="step2">
+        <div class="info-card">
+          <h3>就读城市偏好</h3>
+          <div class="subject-tags" id="cityPref">
+            <button class="subject-tag selected" onclick="togglePref(this,'city')">广东（留省）</button>
+            <button class="subject-tag" onclick="togglePref(this,'city')">北京</button>
+            <button class="subject-tag" onclick="togglePref(this,'city')">上海</button>
+            <button class="subject-tag" onclick="togglePref(this,'city')">长三角</button>
+            <button class="subject-tag" onclick="togglePref(this,'city')">不限城市</button>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>专业偏好</h3>
+          <div class="subject-tags" id="majorPref">
+            <button class="subject-tag" onclick="togglePref(this,'major')">计算机/AI</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">电子/通信</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">经济/金融</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">医学</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">师范/教育</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">法学</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">建筑/土木</button>
+            <button class="subject-tag" onclick="togglePref(this,'major')">不限专业</button>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>志愿策略倾向</h3>
+          <div class="pref-grid">
+            <div class="pref-option selected" onclick="selectStrategy(this,'aggressive')">
+              <h5>🔥 积极进取型</h5>
+              <p>多冲高校，录取概率偏低，但可能有惊喜，适合对未来有明确目标的同学</p>
+            </div>
+            <div class="pref-option" onclick="selectStrategy(this,'balanced')">
+              <h5>⚖️ 均衡稳健型</h5>
+              <p>冲稳保均衡分配，录取概率适中，大多数同学的首选策略</p>
+            </div>
+            <div class="pref-option" onclick="selectStrategy(this,'conservative')">
+              <h5>🛡️ 稳健保守型</h5>
+              <p>以保底为主，优先确保录取，适合对学校要求不高但希望确保录取的同学</p>
+            </div>
+            <div class="pref-option" onclick="selectStrategy(this,'major_first')">
+              <h5>📚 专业优先型</h5>
+              <p>优先选择心仪专业，可适当降低院校档次，适合目标专业明确的同学</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <button class="btn" style="flex:0;padding:14px 24px;border:1.5px solid var(--border);border-radius:10px;font-size:1rem;cursor:pointer;font-family:inherit;" onclick="goStep1()">← 上一步</button>
+          <button class="btn-next" onclick="generateRecommend()">生成智能推荐方案 🎯</button>
+        </div>
+      </div>
+
+      <!-- 步骤3：推荐结果 -->
+      <div class="step-content-area" id="step3">
+        <div class="recommend-summary" id="recSummary"></div>
+
+        <div id="recResult"></div>
+
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:32px;">
+          <button class="export-btn" onclick="exportPDF()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            导出推荐方案
+          </button>
+          <button class="btn btn-blue" onclick="location.href='ai-chat.html'">
+            咨询AI顾问 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/schools-data.js"></script>
+  <script>
+    let currentStep = 1;
+    let selectedSubjects = [];
+    let selectedStrategy = 'aggressive';
+
+    // 读取URL参数预填
+    window.addEventListener('DOMContentLoaded', () => {
+      const score = getParam('score');
+      const province = getParam('province');
+      const subject = getParam('subject');
+      if (score) document.getElementById('recScore').value = score;
+      if (province) {
+        const opt = document.querySelector(`#recProvince option[value="${province}"]`);
+        if (opt) opt.selected = true;
+      }
+      if (subject) {
+        const opt = document.querySelector(`#recSubjectType option[value="${subject}"]`);
+        if (opt) opt.selected = true;
+      }
+    });
+
+    function toggleSubject(btn, subject) {
+      btn.classList.toggle('selected');
+      const idx = selectedSubjects.indexOf(subject);
+      if (idx > -1) selectedSubjects.splice(idx, 1);
+      else selectedSubjects.push(subject);
+    }
+
+    function togglePref(btn, group) {
+      btn.parentElement.querySelectorAll('.subject-tag').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function selectStrategy(el, strategy) {
+      document.querySelectorAll('.pref-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedStrategy = strategy;
+    }
+
+    function setStep(n) {
+      [1,2,3].forEach(i => {
+        document.getElementById(`step${i}`).classList.toggle('show', i === n);
+        const nav = document.getElementById(`nav${i}`);
+        nav.classList.toggle('active', i === n);
+        nav.classList.toggle('done', i < n);
+        if (i < 3) {
+          document.getElementById(`conn${i}`).classList.toggle('done', i < n);
+        }
+      });
+      currentStep = n;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goStep1() { setStep(1); }
+    function goStep2() {
+      const score = document.getElementById('recScore').value;
+      if (!score) { showToast('请输入高考分数', 'error'); return; }
+      setStep(2);
+    }
+
+    function generateRecommend() {
+      const score = parseInt(document.getElementById('recScore').value);
+      const province = document.getElementById('recProvince').value || '广东';
+      const subjectType = document.getElementById('recSubjectType').value;
+
+      if (!score || score < 0 || score > 750) {
+        showToast('请先回到第一步输入有效分数', 'error'); return;
+      }
+
+      setStep(3);
+
+      // 根据分数和策略筛选学校
+      const sorted = [...schoolsData].sort((a,b) => a.score - b.score);
+      const rushSchools = sorted.filter(s => s.score > score && s.score <= score + 30);
+      const stableSchools = sorted.filter(s => s.score >= score - 10 && s.score <= score);
+      const safeSchools = sorted.filter(s => s.score >= score - 40 && s.score < score - 10);
+
+      const take = selectedStrategy === 'aggressive' ? 4 : selectedStrategy === 'conservative' ? 2 : 3;
+
+      // 摘要
+      document.getElementById('recSummary').innerHTML = `
+        <div class="rs-item"><div class="rs-val">${score}</div><div class="rs-label">您的高考分数</div></div>
+        <div class="rs-item"><div class="rs-val">${province}</div><div class="rs-label">所在省份</div></div>
+        <div class="rs-item"><div class="rs-val">${subjectType}</div><div class="rs-label">科目类型</div></div>
+        <div class="rs-item"><div class="rs-val">${rushSchools.slice(0,take).length + stableSchools.slice(0,take).length + safeSchools.slice(0,take).length}</div><div class="rs-label">推荐志愿数</div></div>
+      `;
+
+      // 渲染推荐列表
+      function renderSection(title, cls, schools, prob) {
+        if (!schools.length) return `<div class="recommend-section ${cls}"><h3>${title}</h3><div style="padding:20px;color:var(--text-muted);text-align:center;">暂无符合条件的院校</div></div>`;
+        return `
+          <div class="recommend-section ${cls}">
+            <h3>${title}</h3>
+            ${schools.map((s, i) => `
+              <div class="recommend-item" onclick="location.href='school.html?name=${encodeURIComponent(s.name)}'">
+                <div class="ri-num">${i + 1}</div>
+                <div class="ri-info">
+                  <div class="ri-name">${s.name}</div>
+                  <div class="ri-tags">${s.tags.map(t => `<span class="badge badge-blue">${t}</span>`).join('')}</div>
+                  <div class="ri-meta">📍${s.city} · ${s.nature} · ${s.type} · ${s.majors}个专业</div>
+                </div>
+                <div class="ri-score">
+                  <div class="ri-score-num">${s.score}</div>
+                  <div class="ri-score-label">2025录取线</div>
+                  <div class="ri-prob ${prob.cls}">${prob.text}</div>
+                </div>
+              </div>`).join('')}
+          </div>`;
+      }
+
+      document.getElementById('recResult').innerHTML =
+        renderSection('🔥 冲一冲（录取率约25-35%）', 'rush', rushSchools.slice(0, take), { cls: 'prob-low', text: '录取概率低' }) +
+        renderSection('✅ 稳一稳（录取率约55-70%）', 'stable', stableSchools.slice(0, take), { cls: 'prob-mid', text: '录取概率中' }) +
+        renderSection('🛡️ 保一保（录取率约85-95%）', 'safe', safeSchools.slice(0, take), { cls: 'prob-high', text: '录取概率高' });
+
+      showToast('推荐方案生成成功！', 'success');
+    }
+
+    function exportPDF() {
+      window.print();
+    }
+  </script>
+</body>
+</html>

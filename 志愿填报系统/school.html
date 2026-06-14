@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>院校查询 - 智填志愿</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { padding-top: 68px; }
+    .school-page { padding: 40px 0 80px; }
+
+    .filter-bar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 140px;
+    }
+    .filter-item label { font-size: 0.82rem; color: var(--text-muted); }
+
+    .search-input-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+    .search-input-wrap input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .search-input-wrap input:focus { border-color: var(--primary); }
+    .search-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* 结果统计 */
+    .result-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .result-info span { font-size: 0.9rem; color: var(--text-secondary); }
+
+    /* 院校卡片列表 */
+    .school-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .school-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 20px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .school-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+
+    .school-rank-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .school-main {}
+    .school-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .school-card-name { font-size: 1.1rem; font-weight: 700; }
+    .school-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .school-info-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .school-info-item { font-size: 0.85rem; color: var(--text-secondary); }
+    .school-info-item strong { color: var(--text-primary); }
+
+    .school-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .score-line-item { font-size: 0.85rem; }
+    .score-line-item .score-num { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+    .score-line-item .score-desc { color: var(--text-muted); font-size: 0.78rem; }
+
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 32px;
+    }
+    .page-btn {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .page-btn:hover,
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* 加载中 */
+    .loading-spin {
+      display: flex;
+      justify-content: center;
+      padding: 48px;
+    }
+    .spin {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .school-card { grid-template-columns: 1fr; }
+      .school-scores { text-align: left; flex-direction: row; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">智填志愿</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="score.html">成绩分析</a></li>
+        <li><a href="school.html" class="active">院校查询</a></li>
+        <li><a href="recommend.html">智能推荐</a></li>
+        <li><a href="ai-chat.html">AI咨询</a></li>
+        <li><a href="guide.html">填报指南</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="login.html" class="btn-outline">登录</a>
+        <a href="register.html" class="btn-primary">免费注册</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="school-page">
+    <div class="container">
+      <div class="filter-bar">
+        <div class="filter-row">
+          <div class="search-input-wrap">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchKeyword" placeholder="搜索院校名称、城市、专业..." oninput="filterSchools()">
+          </div>
+          <div class="filter-item">
+            <label>院校类型</label>
+            <select class="form-select" id="filterType" onchange="filterSchools()">
+              <option value="">全部</option>
+              <option value="985">985院校</option>
+              <option value="211">211院校</option>
+              <option value="双一流">双一流</option>
+              <option value="普通本科">普通本科</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>所在地区</label>
+            <select class="form-select" id="filterCity" onchange="filterSchools()">
+              <option value="">全国</option>
+              <option value="广东">广东</option>
+              <option value="北京">北京</option>
+              <option value="上海">上海</option>
+              <option value="江苏">江苏</option>
+              <option value="浙江">浙江</option>
+              <option value="湖北">湖北</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>院校性质</label>
+            <select class="form-select" id="filterPub" onchange="filterSchools()">
+              <option value="">全部</option>
+              <option value="公立">公立</option>
+              <option value="私立">私立/民办</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>分数范围</label>
+            <select class="form-select" id="filterScore" onchange="filterSchools()">
+              <option value="">不限</option>
+              <option value="680+">680分以上</option>
+              <option value="650-680">650-680分</option>
+              <option value="620-650">620-650分</option>
+              <option value="580-620">580-620分</option>
+              <option value="540-580">540-580分</option>
+              <option value="-540">540分以下</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-info">
+        <span>共找到 <strong id="resultCount">0</strong> 所院校</span>
+        <span>数据来源：2025年广东省招生数据</span>
+      </div>
+
+      <div class="school-list" id="schoolList">
+        <div class="loading-spin"><div class="spin"></div></div>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/schools-data.js"></script>
+  <script>
+    let currentPage = 1;
+    const pageSize = 10;
+    let filtered = [];
+
+    function filterSchools() {
+      const kw = document.getElementById('searchKeyword').value.toLowerCase();
+      const type = document.getElementById('filterType').value;
+      const city = document.getElementById('filterCity').value;
+      const pub = document.getElementById('filterPub').value;
+      const scoreRange = document.getElementById('filterScore').value;
+
+      filtered = schoolsData.filter(s => {
+        if (kw && !s.name.toLowerCase().includes(kw) && !s.city.includes(kw)) return false;
+        if (type && !s.tags.includes(type)) return false;
+        if (city && s.province !== city) return false;
+        if (pub && s.nature !== pub) return false;
+        if (scoreRange) {
+          const sc = s.score;
+          if (scoreRange === '680+' && sc < 680) return false;
+          if (scoreRange === '650-680' && (sc < 650 || sc >= 680)) return false;
+          if (scoreRange === '620-650' && (sc < 620 || sc >= 650)) return false;
+          if (scoreRange === '580-620' && (sc < 580 || sc >= 620)) return false;
+          if (scoreRange === '540-580' && (sc < 540 || sc >= 580)) return false;
+          if (scoreRange === '-540' && sc >= 540) return false;
+        }
+        return true;
+      });
+
+      currentPage = 1;
+      document.getElementById('resultCount').textContent = filtered.length;
+      renderPage();
+    }
+
+    function renderPage() {
+      const start = (currentPage - 1) * pageSize;
+      const pageData = filtered.slice(start, start + pageSize);
+      const listEl = document.getElementById('schoolList');
+
+      if (pageData.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-muted)">未找到相关院校，请尝试其他筛选条件</div>';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      listEl.innerHTML = pageData.map((s, i) => `
+        <div class="school-card" onclick="location.href='school-detail.html?id=${s.id}'">
+          <div class="school-rank-badge">${start + i + 1}</div>
+          <div class="school-main">
+            <div class="school-name-row">
+              <span class="school-card-name">${s.name}</span>
+            </div>
+            <div class="school-tags">
+              ${s.tags.map(t => `<span class="badge badge-${tagColor(t)}">${t}</span>`).join('')}
+            </div>
+            <div class="school-info-row">
+              <span class="school-info-item">📍 ${s.city}</span>
+              <span class="school-info-item">🏛️ ${s.nature}</span>
+              <span class="school-info-item">📚 ${s.type}</span>
+              <span class="school-info-item">🎓 <strong>${s.majors}</strong> 个专业</span>
+            </div>
+          </div>
+          <div class="school-scores">
+            <div class="score-line-item">
+              <div class="score-num">${s.score}</div>
+              <div class="score-desc">2025广东最低分</div>
+            </div>
+            <button class="btn btn-ghost" style="padding:6px 16px;font-size:0.82rem;margin-top:4px;">查看详情</button>
+          </div>
+        </div>
+      `).join('');
+
+      // 分页
+      const totalPages = Math.ceil(filtered.length / pageSize);
+      const pages = [];
+      for (let p = 1; p <= Math.min(totalPages, 8); p++) {
+        pages.push(`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`);
+      }
+      document.getElementById('pagination').innerHTML = pages.join('');
+    }
+
+    function goPage(p) {
+      currentPage = p;
+      renderPage();
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+
+    function tagColor(t) {
+      const map = { '985': 'red', '211': 'orange', '双一流': 'purple', '理工': 'blue', '综合': 'green', '师范': 'teal' };
+      return map[t] || 'blue';
+    }
+
+    // 初始化
+    filtered = [...schoolsData];
+    document.getElementById('resultCount').textContent = filtered.length;
+    renderPage();
+  </script>
+</body>
+</html>
